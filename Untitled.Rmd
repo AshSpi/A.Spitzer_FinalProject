@@ -1,0 +1,209 @@
+---
+title: "DATA SCIENCE LAB with R, FINAL PROJECT"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+1. Downloading the dataset
+```{r}
+setwd("/Users/austinspitzer/Desktop")
+house <- read.csv("HousingData.csv")
+house
+```
+2. Viewing first 6 rows of the data set
+```{r}
+head(house)
+```
+3. Summarizing each variable in the dataset
+```{r}
+summary(house)
+```
+
+4. Finding the dimensions of the dataset
+```{r}
+dim(house)
+```
+
+5. Adjusting the value MEDV to a logarithmic scale
+```{r}
+house$log_MEDV <- log(house$MEDV)
+house
+```
+
+6. Comparing the data to find relevant graphs
+```{r}
+library(GGally)
+ggpairs(house[1:4])
+```
+7. Creating a correlation matrix
+```{r}
+matrix <- cor(house)
+matrix
+```
+8. Calculating p-values
+```{r}
+install.packages("Hmisc")
+library("Hmisc")
+pval = rcorr(as.matrix(house))
+pval
+house = house$r
+house = house$P
+```
+
+9. Creating a histogram of median value of owner-occupied homes in $1000's (MEDV) without log
+```{r}
+gg_hist <- ggplot(data = house, aes(x = MEDV)) + 
+  geom_histogram(fill = "lavender", color = "black", bins = 10) + 
+  ggtitle("Median Value of Owners Occupied Homes in $1000s") + 
+  xlab("Median Value") + 
+  ylab("Frequency") + 
+  theme_classic() 
+print(gg_hist)
+```
+
+10. Creating a histogram of median value of owner-occupied homes in $1000's (log_MEDV) with log
+```{r}
+gg_hist <- ggplot(data = house, aes(x = log_MEDV)) + 
+  geom_histogram(fill = "lavender", color = "black", bins = 10) + 
+  ggtitle("Median Value of Owners Occupied Homes in $1000s") + 
+  xlab("Median Value") + 
+  ylab("Frequency") + 
+  theme_classic() 
+print(gg_hist)
+```
+
+11. Creating a scatter plot, CRIM vs MEDV
+```{r}
+scatter <- ggplot(data = house, aes(x = CRIM, y = MEDV)) + 
+  geom_point(size = 5, alpha = 0.5, col = "hotpink", shape=15) + 
+  theme_classic() +
+  ggtitle("Crime rate per capita vs Median Value of house") +
+  xlab("Crime rate") + 
+  ylab("House value (in $1000s")
+print(scatter)
+```
+
+12. Creating a scatter plot, CRIM vs MEDV, scaled x-axis
+```{r}
+scatter2 <- ggplot(data = house, aes(x = CRIM, y = MEDV)) + 
+  geom_point(size = 5, alpha = 0.5, col = "hotpink", shape=15) + 
+  theme_classic() +
+  ggtitle("Crime rate per capita vs Median Value of house") +
+  xlab("Crime rate") + 
+  ylab("House value (in $1000s") +
+  scale_x_log10()
+print(scatter2)
+```
+
+13. Creating a scatter plot, CRIM vs MEDV, with regression line 
+```{r}
+gg_line <- ggplot(house, aes(x = CRIM, y = MEDV)) + 
+  geom_point(size = 3, col = "hotpink", shape=15) + 
+  geom_smooth(method = "lm", lwd = 1.5, col = "black") + 
+  ggtitle("Per Capita Crime Rate vs Median Value in $1000s") + 
+  xlab("Per Capita Crime Rate") + 
+  ylab("Median Value in $1000s") + 
+  theme_gray() + 
+  theme(plot.title = element_text(hjust = 0.5, size = 15)) +
+  scale_x_log10()
+print(gg_line)
+```
+14. Creating a scatter plot, MEDV vs CRIM, with regression line
+```{r}
+gg_line <- ggplot(house, aes(x = MEDV, y = CRIM)) + 
+  geom_point(size = 3, col = "hotpink", shape=17) + 
+  geom_smooth(method = "lm", lwd = 1.5, col = "black") + 
+  ggtitle("Median Value in $1000s vs Per Capita Crime Rate") + 
+  xlab("Median Value in $1000s") + 
+  ylab("Per Capita Crime Rate") + 
+  theme_gray() + 
+  theme(plot.title = element_text(hjust = 0.5, size = 15)) +
+  scale_x_log10()+
+  scale_y_log10()
+print(gg_line)
+```
+
+15. Linear regression of CRIM vs MEDV
+```{r}
+lrmodel <- lm(CRIM~MEDV, data=house)
+matrix_coef <- summary(lm(CRIM~MEDV,data=house))$coefficients
+matrix_coef
+summary(lrmodel)
+```
+16. Finding the t-score of lrmodel
+```{r}
+qt(p=.05, df=484, lower.tail=TRUE)
+```
+
+17. Finding the p-value of lrmodel
+```{r}
+p_value <- pt(q=-1.648008, df=484, lower.tail=TRUE)
+ 
+p_value
+```
+
+18. Linear regression of MEDV vs CRIM
+```{r}
+lrmodel2 <- lm(MEDV~CRIM, data=house)
+matrix_coef <- summary(lm(MEDV~CRIM,data=house))$coefficients
+matrix_coef
+summary(lrmodel2)
+```
+19. Finding the t-score of lrmodel2
+```{r}
+qt(p=.05, df=484, lower.tail=TRUE)
+```
+
+20. Train-Test-Split
+```{r}
+set.seed(56)
+str(house)
+summary(house)
+house1 <- house[,c("MEDV", "CRIM")]
+house1 <- na.omit(house1)
+summary(house1)
+train_set <- sample(1:nrow(house1), nrow(house1) * 0.7)
+train_data <- house1[train_set, ]
+test_data <- house1[-train_set,]
+```
+21. Linear regression of training data set
+
+```{r}
+model <- lm(CRIM ~ ., data = train_data)
+
+summary(model)
+```
+22. New (predicted) values based on the linear regression
+```{r}
+
+roof <- predict(model, newdata = test_data)
+hist(predictions,
+     col = "mistyrose1",
+     main = "Histogram of Predictions", 
+     xlab = "Predictions",
+     ylab = "Frequency",
+     )
+actual_CRIM <- test_data$CRIM
+mse <- mean((actual_CRIM - predictions)^2)
+rmse <- sqrt(mse)
+```
+
+23. Coefficients
+```{r}
+coefficients <- coef(lm_model)
+
+print(coefficients)
+```
